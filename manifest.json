@@ -1,6 +1,6 @@
 {
-  "name": "Service Business Tracker",
-  "short_name": "SBT",
+  "name": "Core Tracker",
+  "short_name": "Core Tracker",
   "description": "Track clients, appointments, income and expenses for your service business — by CoreDigitalTools",
   "start_url": "./index.html",
   "display": "standalone",
