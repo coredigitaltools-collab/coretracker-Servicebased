@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#121210">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SBT">
+<meta name="description" content="Service Business Tracker by CoreDigitalTools">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192x192.png">
+<link rel="icon" type="image/png" href="icons/icon-192x192.png">
+<title>Service Business Tracker — CoreDigitalTools</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#f6f5f1;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --text:#181815;--text2:#6b6b64;--text3:#aaa89e;--accent:#181815;--accent-fg:#fff;
+  --green:#2d6a4f;--green-bg:#d8f3dc;--red:#9b2335;--red-bg:#fde8eb;
+  --amber:#7d4e00;--amber-bg:#fef3cd;--blue:#1a4a7a;--blue-bg:#dbeafe;
+  --gray-bg:#ebebeb;--gray-text:#555;
+  --r:10px;--rl:14px;--sh:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#121210;--surface:#1c1c19;--surface2:#242420;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#eeeee6;--text2:#9a9a90;--text3:#555550;--accent:#eeeee6;--accent-fg:#181815;
+  --green:#74c69d;--green-bg:#1a3828;--red:#f4a0aa;--red-bg:#3a1520;
+  --amber:#ffd166;--amber-bg:#38290a;--blue:#93c5fd;--blue-bg:#18304a;
+  --gray-bg:#2c2c28;--gray-text:#aaa;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5}
+
+/* ── INSTALL BANNER ── */
+#install-banner{display:none;position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:.75rem 1.25rem;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:999;align-items:center;gap:12px;max-width:380px;width:90%}
+.install-text{font-size:13px;color:var(--text);flex:1}
+.install-text span{font-weight:500}
+.install-btns{display:flex;gap:8px;flex-shrink:0}
+.btn-install{font-size:12px;padding:6px 14px;border-radius:var(--r);border:none;background:var(--accent);color:var(--accent-fg);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.btn-dismiss{font-size:12px;padding:6px 10px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ── AUTH ── */
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:2.5rem 2rem;width:100%;max-width:400px;box-shadow:var(--sh)}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
+.auth-logo img{width:36px;height:36px;border-radius:8px;object-fit:contain;background:#141412}
+.auth-logo-text{font-size:12px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+.auth-title{font-size:24px;font-weight:500;color:var(--text);letter-spacing:-.02em;margin-bottom:.4rem}
+.auth-sub{font-size:13px;color:var(--text2);margin-bottom:2rem}
+.role-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
+.role-btn{padding:1rem;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text);cursor:pointer;text-align:left;transition:all .15s;font-family:'DM Sans',sans-serif}
+.role-btn:hover,.role-btn.selected{border-color:var(--text);background:var(--surface2)}
+.role-btn-title{font-size:14px;font-weight:500;margin-bottom:3px}
+.role-btn-sub{font-size:11px;color:var(--text3)}
+.pin-wrap{margin-bottom:1.25rem}
+.pin-label{font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:8px}
+.pin-row{display:flex;gap:8px}
+.pin-dot{width:52px;height:54px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);font-size:22px;text-align:center;color:var(--text);font-family:'DM Mono',monospace;font-weight:500;transition:border-color .15s}
+.pin-dot:focus{outline:none;border-color:var(--text)}
+.btn-full{width:100%;padding:12px;border-radius:var(--r);border:none;background:var(--accent);color:var(--accent-fg);font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .15s;margin-bottom:10px}
+.btn-full:hover{opacity:.82}
+.btn-full.outline{background:transparent;border:1px solid var(--border2);color:var(--text);margin-bottom:0}
+.btn-full.outline:hover{background:var(--surface2)}
+.auth-err{font-size:12px;color:var(--red);margin-bottom:1rem;display:none}
+.setup-step{display:none}.setup-step.active{display:block}
+
+/* ── SHELL ── */
+#app{display:none}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 0;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.main{margin-left:220px;flex:1;padding:2rem;max-width:960px}
+.logo{padding:0 1.25rem 1.25rem;border-bottom:1px solid var(--border);margin-bottom:1rem;display:flex;align-items:center;gap:10px}
+.logo img{width:30px;height:30px;border-radius:6px;object-fit:contain;background:#141412;flex-shrink:0}
+.logo-text .logo-name{font-size:13px;font-weight:500;color:var(--text);letter-spacing:-.01em}
+.logo-text .logo-sub{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 1.25rem;font-size:13px;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s;user-select:none}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--text);border-left-color:var(--text);background:var(--surface2);font-weight:500}
+.nav-item.owner-only{display:none}
+.nav-icon{width:16px;height:16px;opacity:.6;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+.sidebar-footer{margin-top:auto;padding:1rem 1.25rem;border-top:1px solid var(--border)}
+.biz-disp{font-size:13px;font-weight:500;color:var(--text)}
+.role-badge{display:inline-block;font-size:10px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:20px;margin-top:4px}
+.role-owner{background:var(--accent);color:var(--accent-fg)}
+.role-staff{background:var(--gray-bg);color:var(--gray-text)}
+.logout-btn{font-size:11px;color:var(--text3);cursor:pointer;margin-top:6px;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0;text-align:left}
+.logout-btn:hover{color:var(--text)}
+
+/* ── SECTIONS ── */
+.sec{display:none}.sec.active{display:block}
+.page-title{font-size:22px;font-weight:500;color:var(--text);margin-bottom:.25rem;letter-spacing:-.02em}
+.page-sub{font-size:13px;color:var(--text2);margin-bottom:1.75rem}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;margin-bottom:1.25rem;box-shadow:var(--sh)}
+.card-title{font-size:11px;font-weight:500;color:var(--text3);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.07em;font-family:'DM Mono',monospace}
+
+/* ── METRICS ── */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.5rem}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;box-shadow:var(--sh)}
+.mlabel{font-size:10px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.mval{font-size:20px;font-weight:500;color:var(--text);letter-spacing:-.02em}
+
+/* ── FORMS ── */
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+.fr4{grid-template-columns:2fr 1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:10px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace}
+.fg input,.fg select,.fg textarea{font-size:14px;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;transition:border-color .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--text)}
+.fg textarea{resize:vertical;min-height:65px}
+.opt{font-size:10px;color:var(--text3);margin-left:3px;font-weight:400;text-transform:none;letter-spacing:0}
+.req{color:#e24b4a}
+.btn-primary{font-size:13px;padding:10px 22px;border-radius:var(--r);border:none;background:var(--accent);color:var(--accent-fg);cursor:pointer;font-weight:500;font-family:'DM Sans',sans-serif;transition:opacity .15s;margin-top:6px}
+.btn-primary:hover{opacity:.82}
+.btn-sm{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-sm:hover{background:var(--surface2)}
+.btn-danger{border-color:var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red-bg)}
+
+/* ── TABLES ── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+th{text-align:left;font-size:10px;font-weight:500;color:var(--text3);padding:8px 10px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+td{padding:11px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+.erow{text-align:center;color:var(--text3);padding:2rem 0;font-size:13px}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
+.b-paid{background:var(--green-bg);color:var(--green)}
+.b-unpaid{background:var(--amber-bg);color:var(--amber)}
+.b-scheduled{background:var(--blue-bg);color:var(--blue)}
+.b-completed{background:var(--green-bg);color:var(--green)}
+.b-cancelled{background:var(--red-bg);color:var(--red)}
+.b-noshow{background:var(--gray-bg);color:var(--gray-text)}
+
+/* ── CHART ── */
+.ctabs{display:flex;gap:6px;margin-bottom:1rem}
+.ctab{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif}
+.ctab.active{background:var(--text);color:var(--accent-fg);border-color:transparent}
+.chart-wrap{position:relative;width:100%;height:240px}
+
+/* ── SUMMARY GRID ── */
+.sg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:1.5rem}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;box-shadow:var(--sh)}
+.sclabel{font-size:10px;color:var(--text3);margin-bottom:6px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.scval{font-size:18px;font-weight:500;color:var(--text);letter-spacing:-.02em}
+.scsub{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ── AVATAR ── */
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--blue);flex-shrink:0;font-family:'DM Mono',monospace}
+
+/* ── SERVICE CARDS ── */
+.svc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.1rem 1.4rem;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;box-shadow:var(--sh)}
+.pill{font-size:11px;padding:2px 9px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.del-x{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px 4px;line-height:1}
+.del-x:hover{color:var(--red)}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.sec-hdr-title{font-size:14px;font-weight:500;color:var(--text)}
+hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+.empty-state{border:1px dashed var(--border2);border-radius:var(--rl);padding:3rem 1rem;text-align:center;color:var(--text3);font-size:13px}
+.pos{color:var(--green)!important}.neg{color:var(--red)!important}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  .sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap;padding:.75rem;border-right:none;border-bottom:1px solid var(--border)}
+  .main{margin-left:0;padding:1rem}
+  .logo{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .sidebar-footer{display:none}
+  .nav-item{border-left:none;border-bottom:2px solid transparent;padding:6px 8px;font-size:12px}
+  .nav-item.active{border-left-color:transparent;border-bottom-color:var(--text)}
+  .fr,.fr3,.fr4{grid-template-columns:1fr}
+  .sg{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+  #install-banner{bottom:4rem}
+}
+</style>
+</head>
+<body>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <div class="install-text"><span>Install as app</span> for the best experience</div>
+  <div class="install-btns">
+    <button class="btn-install" id="btn-install-yes">Install</button>
+    <button class="btn-dismiss" id="btn-install-no">Later</button>
+  </div>
+</div>
+
+<!-- ══════════ AUTH ══════════ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img src="icons/icon-192x192.png" alt="CoreDigitalTools logo">
+      <div class="auth-logo-text">CoreDigitalTools</div>
+    </div>
+
+    <!-- SETUP (first time) -->
+    <div class="setup-step active" id="step-setup">
+      <div class="auth-title">Welcome</div>
+      <div class="auth-sub">Set up your business tracker. Create an owner PIN to secure your financial data.</div>
+      <div class="fr" style="margin-bottom:12px">
+        <div class="fg"><label>Business name <span class="req">*</span></label><input id="setup-biz" placeholder="e.g. Grace Beauty Studio"></div>
+        <div class="fg"><label>Currency</label>
+          <select id="setup-curr">
+            <option value="UGX">UGX — Ugandan Shilling</option>
+            <option value="KES">KES — Kenyan Shilling</option>
+            <option value="TZS">TZS — Tanzanian Shilling</option>
+            <option value="RWF">RWF — Rwandan Franc</option>
+            <option value="USD">USD — US Dollar</option>
+            <option value="GBP">GBP — British Pound</option>
+            <option value="EUR">EUR — Euro</option>
+            <option value="NGN">NGN — Nigerian Naira</option>
+            <option value="ZAR">ZAR — South African Rand</option>
+            <option value="GHS">GHS — Ghanaian Cedi</option>
+          </select>
+        </div>
+      </div>
+      <div class="pin-wrap">
+        <div class="pin-label">Create your owner PIN (4 digits)</div>
+        <div class="pin-row">
+          <input class="pin-dot" maxlength="1" type="password" inputmode="numeric" id="sp0" oninput="pm('sp',0)">
+          <input class="pin-dot" maxlength="1" type="password" inputmode="numeric" id="sp1" oninput="pm('sp',1)">
+          <input class="pin-dot" maxlength="1" type="password" inputmode="numeric" id="sp2" oninput="pm('sp',2)">
+          <input class="pin-dot" maxlength="1" type="password" inputmode="numeric" id="sp3" oninput="pm('sp',3)">
+        </div>
+      </div>
+      <div class="auth-err" id="setup-err">Please enter your business name and a 4-digit PIN.</div>
+      <button class="btn-full" onclick="completeSetup()">Set up my tracker</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="setup-step" id="step-login">
+      <div class="auth-title" id="login-biz">Welcome back</div>
+      <div class="auth-sub">Who is using the tracker?</div>
+      <div class="role-btns">
+        <div class="role-btn selected" id="rb-owner" onclick="selRole('owner')">
+          <div class="role-btn-title">Owner</div>
+          <div class="role-btn-sub">Full access</div>
+        </div>
+        <div class="role-btn" id="rb-staff" onclick="selRole('staff')">
+          <div class="role-btn-title">Staff</div>
+          <div class="role-btn-sub">Clients &amp; bookings</div>
+        </div>
+      </div>
+      <div id="pin-section" class="pin-wrap">
+        <div class="pin-label">Enter owner PIN</div>
+        <div class="pin-row">
+          <input class="pin-dot" maxlength="1" type="password" inputmode="numeric" id="lp0" oninput="pm('lp',0)">
+          <input class="pin-dot" maxlength="1" type="password" inputmode="numeric" id="lp1" oninput="pm('lp',1)">
+          <input class="pin-dot" maxlength="1" type="password" inputmode="numeric" id="lp2" oninput="pm('lp',2)">
+          <input class="pin-dot" maxlength="1" type="password" inputmode="numeric" id="lp3" oninput="pm('lp',3)">
+        </div>
+      </div>
+      <div class="auth-err" id="login-err">Incorrect PIN. Please try again.</div>
+      <button class="btn-full" onclick="doLogin()" id="login-btn">Enter as Owner</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <img src="icons/icon-192x192.png" alt="logo">
+      <div class="logo-text">
+        <div class="logo-name" id="sb-biz">My Business</div>
+        <div class="logo-sub">CoreDigitalTools</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="show('dashboard',this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="show('clients',this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        Clients
+      </div>
+      <div class="nav-item" onclick="show('appointments',this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 1v4M11 1v4M2 7h12"/></svg>
+        Appointments
+      </div>
+      <div class="nav-item owner-only" onclick="show('income',this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5"/><path d="M5 5H3M5 10H3"/></svg>
+        Income
+      </div>
+      <div class="nav-item owner-only" onclick="show('expenses',this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 4h14M3 4V3a1 1 0 011-1h8a1 1 0 011 1v1M3 4l1 9h8l1-9"/></svg>
+        Expenses
+      </div>
+      <div class="nav-item owner-only" onclick="show('pricing',this)">
+        <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 1L15 7l-7 7L2 8V2h6z"/><circle cx="5.5" cy="5.5" r="1"/></svg>
+        Pricing list
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="biz-disp" id="sb-biz2"></div>
+      <div><span class="role-badge" id="role-badge">Owner</span></div>
+      <button class="logout-btn" onclick="logout()">Switch user</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="sec active" id="sec-dashboard">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub" id="dash-date"></div>
+      <div id="dash-owner">
+        <div class="metrics" id="dash-metrics"></div>
+        <div class="ctabs">
+          <button class="ctab active" onclick="switchChart('daily',this)">Daily</button>
+          <button class="ctab" onclick="switchChart('weekly',this)">Weekly</button>
+          <button class="ctab" onclick="switchChart('monthly',this)">Monthly</button>
+        </div>
+        <div class="card">
+          <div class="card-title" id="chart-title">Revenue — last 14 days</div>
+          <div class="chart-wrap"><canvas id="revenueChart" role="img" aria-label="Revenue bar chart">Revenue data</canvas></div>
+        </div>
+        <div class="sg" id="dash-summaries"></div>
+      </div>
+      <div id="dash-staff" style="display:none">
+        <div class="metrics" id="staff-metrics"></div>
+        <div class="card">
+          <div class="card-title">Today's appointments</div>
+          <div class="tw"><table>
+            <thead><tr><th style="width:30%">Client</th><th style="width:20%">Time</th><th style="width:30%">Service</th><th style="width:20%">Status</th></tr></thead>
+            <tbody id="staff-today-tb"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="sec" id="sec-clients">
+      <div class="page-title">Clients</div>
+      <div class="page-sub">Manage your client list</div>
+      <div class="card">
+        <div class="card-title">Add client</div>
+        <div class="fr">
+          <div class="fg"><label>Name <span class="req">*</span></label><input id="c-name" placeholder="Full name"></div>
+          <div class="fg"><label>Phone</label><input id="c-phone" placeholder="+256..."></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Email</label><input id="c-email" placeholder="email@example.com"></div>
+          <div class="fg"><label>Primary service</label><input id="c-svc" placeholder="e.g. Interior design, Haircut..."></div>
+        </div>
+        <div class="fg" style="margin-bottom:10px"><label>Notes <span class="opt">(optional)</span></label><textarea id="c-notes" placeholder="Preferences, special requests..."></textarea></div>
+        <button class="btn-primary" onclick="addClient()">Add client</button>
+      </div>
+      <div class="sec-hdr">
+        <div class="sec-hdr-title">All clients</div>
+        <span id="client-count" style="font-size:12px;color:var(--text3)"></span>
+      </div>
+      <div class="card" style="padding:.5rem 0">
+        <div class="tw"><table>
+          <thead><tr><th style="width:30%">Client</th><th style="width:20%">Service</th><th style="width:18%">Total spent</th><th style="width:10%">Visits</th><th style="width:22%"></th></tr></thead>
+          <tbody id="clients-tb"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div class="sec" id="sec-appointments">
+      <div class="page-title">Appointments</div>
+      <div class="page-sub">Track every session and booking</div>
+      <div class="card">
+        <div class="card-title">Log appointment</div>
+        <div class="fr">
+          <div class="fg"><label>Client <span class="req">*</span></label><select id="a-client"><option value="">Select client</option></select></div>
+          <div class="fg"><label>Date <span class="req">*</span></label><input type="date" id="a-date"></div>
+        </div>
+        <div class="fr fr3">
+          <div class="fg"><label>Time <span class="opt">(optional)</span></label><input type="time" id="a-time"></div>
+          <div class="fg"><label>Service</label><select id="a-svc"><option value="">Select service</option></select></div>
+          <div class="fg"><label>Status</label><select id="a-status"><option>Scheduled</option><option>Completed</option><option>Cancelled</option><option>No-show</option></select></div>
+        </div>
+        <button class="btn-primary" onclick="addAppt()">Save appointment</button>
+      </div>
+      <div class="card" style="padding:.5rem 0">
+        <div class="tw"><table>
+          <thead><tr><th style="width:20%">Client</th><th style="width:13%">Date</th><th style="width:10%">Time</th><th style="width:22%">Service</th><th style="width:15%">Status</th><th style="width:20%"></th></tr></thead>
+          <tbody id="appts-tb"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- INCOME -->
+    <div class="sec" id="sec-income">
+      <div class="page-title">Income</div>
+      <div class="page-sub">Track payments — daily, monthly and annual</div>
+      <div class="card">
+        <div class="card-title">Log payment</div>
+        <div class="fr">
+          <div class="fg"><label>Client <span class="req">*</span></label><select id="i-client"><option value="">Select client</option></select></div>
+          <div class="fg"><label>Amount (<span class="curr-lbl">UGX</span>) <span class="req">*</span></label><input type="number" id="i-amount" placeholder="0"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Date <span class="req">*</span></label><input type="date" id="i-date"></div>
+          <div class="fg"><label>Status</label><select id="i-status"><option>Paid</option><option>Unpaid</option></select></div>
+        </div>
+        <div class="fg" style="margin-bottom:10px"><label>Note <span class="opt">(optional)</span></label><input id="i-note" placeholder="e.g. Invoice #001, Session payment"></div>
+        <button class="btn-primary" onclick="addIncome()">Save payment</button>
+      </div>
+      <div class="metrics" id="income-metrics"></div>
+      <div class="card" style="padding:.5rem 0">
+        <div class="tw"><table>
+          <thead><tr><th style="width:20%">Client</th><th style="width:13%">Date</th><th style="width:20%">Amount</th><th style="width:22%">Note</th><th style="width:13%">Status</th><th style="width:12%"></th></tr></thead>
+          <tbody id="income-tb"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="sec" id="sec-expenses">
+      <div class="page-title">Expenses</div>
+      <div class="page-sub">Track costs and see your net profit</div>
+      <div class="card">
+        <div class="card-title">Log expense</div>
+        <div class="fr">
+          <div class="fg"><label>Description <span class="req">*</span></label><input id="e-desc" placeholder="e.g. Supplies, Rent, Fuel..."></div>
+          <div class="fg"><label>Category</label>
+            <select id="e-cat"><option>Supplies</option><option>Transport</option><option>Rent</option><option>Marketing</option><option>Utilities</option><option>Salaries</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Amount (<span class="curr-lbl">UGX</span>) <span class="req">*</span></label><input type="number" id="e-amount" placeholder="0"></div>
+          <div class="fg"><label>Date <span class="req">*</span></label><input type="date" id="e-date"></div>
+        </div>
+        <button class="btn-primary" onclick="addExpense()">Save expense</button>
+      </div>
+      <div class="metrics" id="exp-metrics"></div>
+      <div class="card" style="padding:.5rem 0">
+        <div class="tw"><table>
+          <thead><tr><th style="width:30%">Description</th><th style="width:18%">Category</th><th style="width:18%">Date</th><th style="width:22%">Amount</th><th style="width:12%"></th></tr></thead>
+          <tbody id="exp-tb"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- PRICING -->
+    <div class="sec" id="sec-pricing">
+      <div class="page-title">Pricing list</div>
+      <div class="page-sub">Set up your services and prices</div>
+      <div class="card">
+        <div class="card-title">Business settings</div>
+        <div class="fr">
+          <div class="fg"><label>Business name</label><input id="biz-name" placeholder="e.g. Grace Beauty Studio" oninput="updateBiz()"></div>
+          <div class="fg"><label>Currency</label>
+            <select id="biz-curr" onchange="updateCurr()">
+              <option value="UGX">UGX — Ugandan Shilling</option>
+              <option value="KES">KES — Kenyan Shilling</option>
+              <option value="TZS">TZS — Tanzanian Shilling</option>
+              <option value="RWF">RWF — Rwandan Franc</option>
+              <option value="USD">USD — US Dollar</option>
+              <option value="GBP">GBP — British Pound</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="NGN">NGN — Nigerian Naira</option>
+              <option value="ZAR">ZAR — South African Rand</option>
+              <option value="GHS">GHS — Ghanaian Cedi</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:6px">
+          <div style="font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px">Change owner PIN</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="new-pin" maxlength="4" placeholder="New 4-digit PIN" inputmode="numeric" style="font-size:14px;padding:8px 12px;border:1px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);width:180px;font-family:'DM Mono',monospace">
+            <button class="btn-sm" onclick="changePin()">Update PIN</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Add a service</div>
+        <div class="fr fr4">
+          <div class="fg"><label>Service name <span class="req">*</span></label><input id="p-name" placeholder="e.g. Full room design, Haircut..."></div>
+          <div class="fg"><label>Price <span class="req">*</span></label><input type="number" id="p-price" placeholder="0"></div>
+          <div class="fg"><label>Duration <span class="opt">(optional)</span></label><input id="p-dur" placeholder="e.g. 1 hour, 2 days"></div>
+          <div class="fg"><label>Category <span class="opt">(optional)</span></label><input id="p-cat" placeholder="e.g. Design, Hair..."></div>
+        </div>
+        <div class="fg" style="margin-bottom:12px"><label>Description <span class="opt">(optional)</span></label><textarea id="p-desc" placeholder="What does this service include?"></textarea></div>
+        <button class="btn-primary" onclick="addSvc()">Add to list</button>
+      </div>
+      <div class="sec-hdr">
+        <div class="sec-hdr-title">Your services</div>
+        <span id="price-meta" style="font-size:12px;color:var(--text3)"></span>
+      </div>
+      <div id="pricing-list">
+        <div class="empty-state"><div style="margin-bottom:8px;font-size:20px">&#9673;</div><div style="font-weight:500;color:var(--text2)">No services yet</div><p>Add your first service above.</p></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+let db={bizName:'',currency:'UGX',pin:'',clients:[],appointments:[],income:[],expenses:[],services:[]};
+let role=null, chartMode='daily', rChart=null;
+const now=new Date();
+
+function save(){localStorage.setItem('cdt_sbt',JSON.stringify(db));}
+function load(){try{const r=localStorage.getItem('cdt_sbt');if(r)db=JSON.parse(r);}catch(e){}}
+function fmt(n){return db.currency+' '+Math.round(n).toLocaleString();}
+function td(){return now.toISOString().slice(0,10);}
+function tm(){return now.toISOString().slice(0,7);}
+function ty(){return now.getFullYear().toString();}
+
+// ── PWA INSTALL ────────────────────────────────────────
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredPrompt=e;
+  const b=document.getElementById('install-banner');
+  b.style.display='flex';
+  document.getElementById('btn-install-yes').onclick=async()=>{
+    b.style.display='none';
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt=null;
+  };
+  document.getElementById('btn-install-no').onclick=()=>b.style.display='none';
+});
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+
+// ── AUTH ────────────────────────────────────────────────
+load();
+let selRole='owner';
+
+function initAuth(){
+  if(!db.pin){
+    document.getElementById('step-setup').classList.add('active');
+    document.getElementById('step-login').classList.remove('active');
+  } else {
+    document.getElementById('step-setup').classList.remove('active');
+    document.getElementById('step-login').classList.add('active');
+    document.getElementById('login-biz').textContent=db.bizName||'Welcome back';
+  }
+}
+initAuth();
+
+function pm(pfx,idx){
+  const v=document.getElementById(pfx+idx).value;
+  if(v.length===1&&idx<3)document.getElementById(pfx+(idx+1)).focus();
+}
+function getPin(pfx){return[0,1,2,3].map(i=>document.getElementById(pfx+i).value).join('');}
+
+function completeSetup(){
+  const biz=document.getElementById('setup-biz').value.trim();
+  const pin=getPin('sp');
+  const err=document.getElementById('setup-err');
+  if(!biz||pin.length!==4){err.style.display='block';return;}
+  err.style.display='none';
+  db.bizName=biz; db.currency=document.getElementById('setup-curr').value; db.pin=pin;
+  save(); enterApp('owner');
+}
+
+function selRole(r){
+  selRole=r;
+  document.getElementById('rb-owner').classList.toggle('selected',r==='owner');
+  document.getElementById('rb-staff').classList.toggle('selected',r==='staff');
+  document.getElementById('pin-section').style.display=r==='owner'?'block':'none';
+  document.getElementById('login-btn').textContent=r==='owner'?'Enter as Owner':'Continue as Staff';
+  document.getElementById('login-err').style.display='none';
+}
+
+function doLogin(){
+  if(selRole==='staff'){enterApp('staff');return;}
+  const pin=getPin('lp');
+  if(pin!==db.pin){
+    document.getElementById('login-err').style.display='block';
+    [0,1,2,3].forEach(i=>document.getElementById('lp'+i).value='');
+    document.getElementById('lp0').focus(); return;
+  }
+  document.getElementById('login-err').style.display='none';
+  enterApp('owner');
+}
+
+function enterApp(r){
+  role=r;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sb-biz').textContent=db.bizName||'My Business';
+  document.getElementById('sb-biz2').textContent=db.bizName||'My Business';
+  const badge=document.getElementById('role-badge');
+  badge.textContent=r==='owner'?'Owner':'Staff';
+  badge.className='role-badge '+(r==='owner'?'role-owner':'role-staff');
+  document.querySelectorAll('.owner-only').forEach(el=>el.style.display=r==='owner'?'flex':'none');
+  document.querySelectorAll('.curr-lbl').forEach(el=>el.textContent=db.currency);
+  if(r==='owner'){document.getElementById('biz-name').value=db.bizName;document.getElementById('biz-curr').value=db.currency;}
+  document.getElementById('dash-date').textContent=now.toLocaleDateString('en-UG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  renderAll();
+  show('dashboard',document.querySelector('.nav-item'));
+}
+
+function logout(){
+  role=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  [0,1,2,3].forEach(i=>{const e=document.getElementById('lp'+i);if(e)e.value='';});
+  selRole('owner'); initAuth();
+}
+
+function changePin(){
+  const np=document.getElementById('new-pin').value.trim();
+  if(np.length!==4||!/^\d{4}$/.test(np)){alert('Please enter a 4-digit PIN');return;}
+  db.pin=np; save(); document.getElementById('new-pin').value=''; alert('PIN updated.');
+}
+
+// ── NAV ────────────────────────────────────────────────
+function show(name,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  if(el)el.classList.add('active');
+  if(name==='dashboard')renderDash();
+  if(name==='income')renderIncMetrics();
+  if(name==='expenses')renderExpMetrics();
+  if(name==='pricing')renderPricing();
+}
+
+// ── BIZ ────────────────────────────────────────────────
+function updateBiz(){
+  db.bizName=document.getElementById('biz-name').value.trim()||'My Business';
+  document.getElementById('sb-biz').textContent=db.bizName;
+  document.getElementById('sb-biz2').textContent=db.bizName;
+  save();
+}
+function updateCurr(){
+  db.currency=document.getElementById('biz-curr').value;
+  document.querySelectorAll('.curr-lbl').forEach(el=>el.textContent=db.currency);
+  save(); renderAll();
+}
+
+// ── CLIENTS ────────────────────────────────────────────
+function addClient(){
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){alert('Please enter a client name');return;}
+  db.clients.push({id:Date.now(),name,phone:document.getElementById('c-phone').value.trim(),email:document.getElementById('c-email').value.trim(),service:document.getElementById('c-svc').value.trim(),notes:document.getElementById('c-notes').value.trim()});
+  ['c-name','c-phone','c-email','c-svc','c-notes'].forEach(id=>document.getElementById(id).value='');
+  save(); renderClients(); updateSelects();
+}
+function delClient(id){db.clients=db.clients.filter(c=>c.id!==id);save();renderClients();updateSelects();}
+function renderClients(){
+  const tb=document.getElementById('clients-tb');
+  document.getElementById('client-count').textContent=db.clients.length+' client'+(db.clients.length!==1?'s':'');
+  if(!db.clients.length){tb.innerHTML='<tr><td colspan="5" class="erow">No clients yet</td></tr>';return;}
+  tb.innerHTML=db.clients.map(c=>{
+    const spent=db.income.filter(i=>i.clientId===c.id&&i.status==='Paid').reduce((s,i)=>s+i.amount,0);
+    const visits=db.appointments.filter(a=>a.clientId===c.id&&a.status==='Completed').length;
+    const ini=c.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    return`<tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${ini}</div><div><div style="font-weight:500">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.phone||c.email||''}</div></div></div></td><td style="color:var(--text2)">${c.service||'—'}</td><td>${spent?fmt(spent):'—'}</td><td>${visits}</td><td>${role==='owner'?`<button class="btn-sm btn-danger" onclick="delClient(${c.id})">Remove</button>`:''}</td></tr>`;
+  }).join('');
+}
+
+// ── APPOINTMENTS ───────────────────────────────────────
+function addAppt(){
+  const clientId=parseInt(document.getElementById('a-client').value);
+  const date=document.getElementById('a-date').value;
+  if(!clientId||!date){alert('Please select a client and date');return;}
+  const client=db.clients.find(c=>c.id===clientId);
+  db.appointments.push({id:Date.now(),clientId,clientName:client.name,date,time:document.getElementById('a-time').value,service:document.getElementById('a-svc').value,status:document.getElementById('a-status').value});
+  ['a-date','a-time'].forEach(id=>document.getElementById(id).value='');
+  save(); renderAppts(); renderClients(); if(role==='staff')renderStaffDash();
+}
+function delAppt(id){db.appointments=db.appointments.filter(a=>a.id!==id);save();renderAppts();}
+function renderAppts(){
+  const tb=document.getElementById('appts-tb');
+  if(!db.appointments.length){tb.innerHTML='<tr><td colspan="6" class="erow">No appointments yet</td></tr>';return;}
+  tb.innerHTML=[...db.appointments].sort((a,b)=>b.date.localeCompare(a.date)).map(a=>{
+    const bk=a.status==='No-show'?'noshow':a.status.toLowerCase();
+    return`<tr><td style="font-weight:500">${a.clientName}</td><td>${a.date}</td><td>${a.time||'—'}</td><td style="color:var(--text2)">${a.service||'—'}</td><td><span class="badge b-${bk}">${a.status}</span></td><td>${role==='owner'?`<button class="btn-sm btn-danger" onclick="delAppt(${a.id})">Del</button>`:''}</td></tr>`;
+  }).join('');
+}
+
+// ── INCOME ─────────────────────────────────────────────
+function addIncome(){
+  const clientId=parseInt(document.getElementById('i-client').value);
+  const amount=parseFloat(document.getElementById('i-amount').value);
+  const date=document.getElementById('i-date').value;
+  if(!clientId||!amount||!date){alert('Please fill client, amount and date');return;}
+  const client=db.clients.find(c=>c.id===clientId);
+  db.income.push({id:Date.now(),clientId,clientName:client.name,amount,date,status:document.getElementById('i-status').value,note:document.getElementById('i-note').value.trim()});
+  ['i-amount','i-date','i-note'].forEach(id=>document.getElementById(id).value='');
+  save(); renderIncome(); renderIncMetrics(); renderClients(); renderDash();
+}
+function delIncome(id){db.income=db.income.filter(i=>i.id!==id);save();renderIncome();renderIncMetrics();renderDash();}
+function renderIncome(){
+  const tb=document.getElementById('income-tb');
+  if(!db.income.length){tb.innerHTML='<tr><td colspan="6" class="erow">No income logged yet</td></tr>';return;}
+  tb.innerHTML=[...db.income].sort((a,b)=>b.date.localeCompare(a.date)).map(i=>`<tr><td style="font-weight:500">${i.clientName}</td><td>${i.date}</td><td style="font-weight:500">${fmt(i.amount)}</td><td style="color:var(--text2)">${i.note||'—'}</td><td><span class="badge b-${i.status.toLowerCase()}">${i.status}</span></td><td><button class="btn-sm btn-danger" onclick="delIncome(${i.id})">Del</button></td></tr>`).join('');
+}
+function renderIncMetrics(){
+  const p=db.income.filter(i=>i.status==='Paid');
+  const tR=p.filter(i=>i.date===td()).reduce((s,i)=>s+i.amount,0);
+  const mR=p.filter(i=>i.date.startsWith(tm())).reduce((s,i)=>s+i.amount,0);
+  const yR=p.filter(i=>i.date.startsWith(ty())).reduce((s,i)=>s+i.amount,0);
+  const unp=db.income.filter(i=>i.status==='Unpaid').reduce((s,i)=>s+i.amount,0);
+  document.getElementById('income-metrics').innerHTML=`
+    <div class="metric"><div class="mlabel">Today</div><div class="mval">${fmt(tR)}</div></div>
+    <div class="metric"><div class="mlabel">This month</div><div class="mval">${fmt(mR)}</div></div>
+    <div class="metric"><div class="mlabel">This year</div><div class="mval">${fmt(yR)}</div></div>
+    <div class="metric"><div class="mlabel">Outstanding</div><div class="mval neg">${fmt(unp)}</div></div>`;
+}
+
+// ── EXPENSES ───────────────────────────────────────────
+function addExpense(){
+  const desc=document.getElementById('e-desc').value.trim();
+  const amount=parseFloat(document.getElementById('e-amount').value);
+  const date=document.getElementById('e-date').value;
+  if(!desc||!amount||!date){alert('Please fill all expense fields');return;}
+  db.expenses.push({id:Date.now(),desc,category:document.getElementById('e-cat').value,amount,date});
+  ['e-desc','e-amount','e-date'].forEach(id=>document.getElementById(id).value='');
+  save(); renderExpenses(); renderExpMetrics(); renderDash();
+}
+function delExpense(id){db.expenses=db.expenses.filter(e=>e.id!==id);save();renderExpenses();renderExpMetrics();renderDash();}
+function renderExpenses(){
+  const tb=document.getElementById('exp-tb');
+  if(!db.expenses.length){tb.innerHTML='<tr><td colspan="5" class="erow">No expenses logged yet</td></tr>';return;}
+  tb.innerHTML=[...db.expenses].sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<tr><td style="font-weight:500">${e.desc}</td><td style="color:var(--text2)">${e.category}</td><td>${e.date}</td><td>${fmt(e.amount)}</td><td><button class="btn-sm btn-danger" onclick="delExpense(${e.id})">Del</button></td></tr>`).join('');
+}
+function renderExpMetrics(){
+  const mE=db.expenses.filter(e=>e.date.startsWith(tm())).reduce((s,e)=>s+e.amount,0);
+  const yE=db.expenses.filter(e=>e.date.startsWith(ty())).reduce((s,e)=>s+e.amount,0);
+  const p=db.income.filter(i=>i.status==='Paid');
+  const mI=p.filter(i=>i.date.startsWith(tm())).reduce((s,i)=>s+i.amount,0);
+  const yI=p.filter(i=>i.date.startsWith(ty())).reduce((s,i)=>s+i.amount,0);
+  const pm=mI-mE,py=yI-yE;
+  document.getElementById('exp-metrics').innerHTML=`
+    <div class="metric"><div class="mlabel">Expenses (month)</div><div class="mval">${fmt(mE)}</div></div>
+    <div class="metric"><div class="mlabel">Expenses (year)</div><div class="mval">${fmt(yE)}</div></div>
+    <div class="metric"><div class="mlabel">Net profit (month)</div><div class="mval ${pm>=0?'pos':'neg'}">${fmt(pm)}</div></div>
+    <div class="metric"><div class="mlabel">Net profit (year)</div><div class="mval ${py>=0?'pos':'neg'}">${fmt(py)}</div></div>`;
+}
+
+// ── PRICING ────────────────────────────────────────────
+function addSvc(){
+  const name=document.getElementById('p-name').value.trim();
+  const price=parseFloat(document.getElementById('p-price').value);
+  if(!name){alert('Please enter a service name');return;}
+  if(!price||isNaN(price)){alert('Please enter a price');return;}
+  db.services.push({id:Date.now(),name,price,duration:document.getElementById('p-dur').value.trim(),category:document.getElementById('p-cat').value.trim(),desc:document.getElementById('p-desc').value.trim()});
+  ['p-name','p-price','p-dur','p-cat','p-desc'].forEach(id=>document.getElementById(id).value='');
+  save(); renderPricing(); updateSelects();
+}
+function delSvc(id){db.services=db.services.filter(s=>s.id!==id);save();renderPricing();updateSelects();}
+function renderPricing(){
+  const list=document.getElementById('pricing-list');
+  const meta=document.getElementById('price-meta');
+  if(!db.services.length){
+    list.innerHTML='<div class="empty-state"><div style="margin-bottom:8px;font-size:20px">&#9673;</div><div style="font-weight:500;color:var(--text2)">No services yet</div><p>Add your first service above.</p></div>';
+    meta.textContent='';return;
+  }
+  const prices=db.services.map(s=>s.price);
+  meta.textContent=db.services.length+' service'+(db.services.length!==1?'s':'')+' · avg '+fmt(Math.round(prices.reduce((a,b)=>a+b,0)/prices.length));
+  list.innerHTML=db.services.map(s=>`
+    <div class="svc-card">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:3px">${s.name}</div>
+        ${s.desc?`<div style="font-size:12px;color:var(--text2);margin-bottom:7px">${s.desc}</div>`:''}
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${s.duration?`<span class="pill">${s.duration}</span>`:''}
+          ${s.category?`<span class="pill">${s.category}</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-shrink:0">
+        <div style="text-align:right">
+          <div style="font-size:17px;font-weight:500;color:var(--text)">${fmt(s.price)}</div>
+          ${s.duration?`<div style="font-size:11px;color:var(--text3)">per session</div>`:''}
+        </div>
+        <button class="del-x" onclick="delSvc(${s.id})" title="Remove">&#x2715;</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── SELECTS ────────────────────────────────────────────
+function updateSelects(){
+  ['a-client','i-client'].forEach(id=>{
+    const sel=document.getElementById(id),val=sel.value;
+    sel.innerHTML='<option value="">Select client</option>'+db.clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+    sel.value=val;
+  });
+  const ss=document.getElementById('a-svc'),sv=ss.value;
+  ss.innerHTML='<option value="">Select service</option>'+db.services.map(s=>`<option value="${s.name}">${s.name} — ${fmt(s.price)}</option>`).join('');
+  ss.value=sv;
+}
+
+// ── DASHBOARD ──────────────────────────────────────────
+function renderDash(){
+  if(role==='owner')renderOwnerDash(); else renderStaffDash();
+}
+function renderOwnerDash(){
+  document.getElementById('dash-owner').style.display='block';
+  document.getElementById('dash-staff').style.display='none';
+  const p=db.income.filter(i=>i.status==='Paid');
+  const tR=p.filter(i=>i.date===td()).reduce((s,i)=>s+i.amount,0);
+  const mR=p.filter(i=>i.date.startsWith(tm())).reduce((s,i)=>s+i.amount,0);
+  const yR=p.filter(i=>i.date.startsWith(ty())).reduce((s,i)=>s+i.amount,0);
+  const mE=db.expenses.filter(e=>e.date.startsWith(tm())).reduce((s,e)=>s+e.amount,0);
+  const tA=db.appointments.filter(a=>a.date===td()).length;
+  document.getElementById('dash-metrics').innerHTML=`
+    <div class="metric"><div class="mlabel">Today's revenue</div><div class="mval">${fmt(tR)}</div></div>
+    <div class="metric"><div class="mlabel">Monthly revenue</div><div class="mval">${fmt(mR)}</div></div>
+    <div class="metric"><div class="mlabel">Annual revenue</div><div class="mval">${fmt(yR)}</div></div>
+    <div class="metric"><div class="mlabel">Monthly profit</div><div class="mval ${(mR-mE)>=0?'pos':'neg'}">${fmt(mR-mE)}</div></div>
+    <div class="metric"><div class="mlabel">Clients</div><div class="mval">${db.clients.length}</div></div>
+    <div class="metric"><div class="mlabel">Today's appts</div><div class="mval">${tA}</div></div>`;
+  const yd=new Date(now);yd.setDate(yd.getDate()-1);
+  const yR2=p.filter(i=>i.date===yd.toISOString().slice(0,10)).reduce((s,i)=>s+i.amount,0);
+  const yE=db.expenses.filter(e=>e.date.startsWith(ty())).reduce((s,e)=>s+e.amount,0);
+  document.getElementById('dash-summaries').innerHTML=`
+    <div class="sc"><div class="sclabel">Daily summary</div><div class="scval">${fmt(tR)}</div><div class="scsub">Yesterday: ${fmt(yR2)}</div></div>
+    <div class="sc"><div class="sclabel">Monthly summary</div><div class="scval">${fmt(mR)}</div><div class="scsub">Exp: ${fmt(mE)} · Profit: ${fmt(mR-mE)}</div></div>
+    <div class="sc"><div class="sclabel">Annual summary</div><div class="scval">${fmt(yR)}</div><div class="scsub">Exp: ${fmt(yE)} · Net: ${fmt(yR-yE)}</div></div>`;
+  drawChart(chartMode);
+}
+function renderStaffDash(){
+  document.getElementById('dash-owner').style.display='none';
+  document.getElementById('dash-staff').style.display='block';
+  const todays=db.appointments.filter(a=>a.date===td());
+  document.getElementById('staff-metrics').innerHTML=`
+    <div class="metric"><div class="mlabel">Today's appointments</div><div class="mval">${todays.length}</div></div>
+    <div class="metric"><div class="mlabel">Scheduled</div><div class="mval">${todays.filter(a=>a.status==='Scheduled').length}</div></div>
+    <div class="metric"><div class="mlabel">Completed today</div><div class="mval">${todays.filter(a=>a.status==='Completed').length}</div></div>
+    <div class="metric"><div class="mlabel">Total clients</div><div class="mval">${db.clients.length}</div></div>`;
+  const tb=document.getElementById('staff-today-tb');
+  if(!todays.length){tb.innerHTML='<tr><td colspan="4" class="erow">No appointments today</td></tr>';return;}
+  tb.innerHTML=todays.sort((a,b)=>(a.time||'').localeCompare(b.time||'')).map(a=>{
+    const bk=a.status==='No-show'?'noshow':a.status.toLowerCase();
+    return`<tr><td style="font-weight:500">${a.clientName}</td><td>${a.time||'—'}</td><td style="color:var(--text2)">${a.service||'—'}</td><td><span class="badge b-${bk}">${a.status}</span></td></tr>`;
+  }).join('');
+}
+
+// ── CHART ──────────────────────────────────────────────
+function switchChart(mode,el){
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); chartMode=mode; drawChart(mode);
+}
+function drawChart(mode){
+  const p=db.income.filter(i=>i.status==='Paid');
+  let labels=[],data=[];
+  if(mode==='daily'){
+    document.getElementById('chart-title').textContent='Revenue — last 14 days';
+    for(let i=13;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const s=d.toISOString().slice(0,10);labels.push(d.toLocaleDateString('en-UG',{day:'numeric',month:'short'}));data.push(p.filter(x=>x.date===s).reduce((a,b)=>a+b.amount,0));}
+  }else if(mode==='weekly'){
+    document.getElementById('chart-title').textContent='Revenue — last 8 weeks';
+    for(let i=7;i>=0;i--){const e=new Date(now);e.setDate(e.getDate()-i*7);const s=new Date(e);s.setDate(s.getDate()-6);labels.push('Wk '+e.toLocaleDateString('en-UG',{day:'numeric',month:'short'}));data.push(p.filter(x=>x.date>=s.toISOString().slice(0,10)&&x.date<=e.toISOString().slice(0,10)).reduce((a,b)=>a+b.amount,0));}
+  }else{
+    document.getElementById('chart-title').textContent='Revenue — last 12 months';
+    for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);labels.push(d.toLocaleDateString('en-UG',{month:'short',year:'2-digit'}));data.push(p.filter(x=>x.date.startsWith(d.toISOString().slice(0,7))).reduce((a,b)=>a+b.amount,0));}
+  }
+  const ctx=document.getElementById('revenueChart').getContext('2d');
+  if(rChart)rChart.destroy();
+  const dark=matchMedia('(prefers-color-scheme:dark)').matches;
+  rChart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Revenue',data,backgroundColor:dark?'#4a90c4':'#1a4a7a',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:dark?'#555':'#aaa',font:{size:11,family:"'DM Mono',monospace"},autoSkip:true,maxRotation:45},grid:{display:false}},y:{ticks:{color:dark?'#555':'#aaa',font:{size:11,family:"'DM Mono',monospace"},callback:v=>db.currency+' '+(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)},grid:{color:dark?'rgba(255,255,255,.04)':'rgba(0,0,0,.04)'}}}}});
+}
+
+function renderAll(){
+  renderClients();renderAppts();renderIncome();renderExpenses();renderPricing();updateSelects();renderDash();
+}
+</script>
+</body>
+</html>
